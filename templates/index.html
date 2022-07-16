@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cesium Flask App</title>
+    <!-- Dependancies -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.95/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <!-- <script src={{ url_for('static',filename='js/Cesium.js') }}></script>
+    <link href={{ url_for('static',filename='css/widgets.css') }} rel="stylesheet"> -->
+    <link href={{ url_for('static',filename='css/style.css') }} rel="stylesheet">
+    <link rel="icon"  href={{ url_for('static',filename='css/favicon.ico') }}/>
+</head>
+<body>
+    <div id="cesiumContainer"></div>
+    <script src={{ url_for('static',filename='js/CesiumContainer.js') }} ></script>
+  </body>
+  </html>

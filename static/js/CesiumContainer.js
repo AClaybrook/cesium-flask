@@ -431,6 +431,18 @@ function setupLayers() {
       })
     );
 
+    addAdditionalLayerOption(
+      "GOES East Full IR",
+      new Cesium.WebMapServiceImageryProvider({
+        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?",
+        layers: "fulldisk_ch14",
+        parameters: {
+          transparent: "true",
+          format: "image/png",
+        },
+      })
+    );
+
     // Create the additional layers
     addAdditionalLayerOption(
       "GOES West Vis",
@@ -457,33 +469,7 @@ function setupLayers() {
         })
       );
 
-  // //  Looks likes east is conus
-  // addAdditionalLayerOption(
-  //   "GOES East Infrared",
-  //   new Cesium.WebMapServiceImageryProvider({
-  //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/east_ir.cgi?",
-  //     layers: "goes_east_ir",
-  //     parameters: {
-  //       transparent: "true",
-  //       format: "image/png",
-  //     },
-  //   })
-  // );
 
-    //  Looks likes east is conus
-    addAdditionalLayerOption(
-      "GOES East Full IR",
-      new Cesium.WebMapServiceImageryProvider({
-        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?",
-        layers: "fulldisk_ch14",
-        parameters: {
-          transparent: "true",
-          format: "image/png",
-        },
-      })
-    );
-
- 
 
   addAdditionalLayerOption(
     "Nexrad Weather Radar",

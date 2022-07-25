@@ -11,27 +11,27 @@ def home():
 # Return czml
 @app.route('/czml1')
 def get_czml1():
-    filename = 'data/data1.czml'
-    return send_file(filename)
+    return send_from_directory('data','data1.czml')
 
 # Return czml
 @app.route('/czml2')
 def get_czml2():
-    filename = 'data/data2.czml'
-    return send_file(filename)
+    return send_from_directory('data','data2.czml')
 
 # Return data 
 @app.route('/json')
 def get_json():
-    filename = 'data/data.json'
-    return send_file(filename)
-
+    return send_from_directory('data','data.json')
 
 # Return Ground Stations 
 @app.route('/GroundStations')
 def get_groundstations():
     filename = 'data/GroundStations.json'
     return send_file(filename)
+
+@app.route('/image')
+def get_image2():
+    return send_from_directory('data','image.png')
 
 # Run if main
 if __name__ == "__main__":

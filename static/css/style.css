@@ -9,11 +9,43 @@ body {
   height: 100%;
 }
 
+
+#toolbar2{
+  position: absolute;
+  top: 5px;
+  left: 500px;
+}
+
 #toolbar{
   position: absolute;
   top: 5px;
   left: 5px;
-  /* background: rgba(42, 42, 42, 0.8); */
-  padding: 5px 8px;
+  background: rgba(42, 42, 42, 0.8);
+  padding: 4px;
+  border-radius: 4px;
+  color: white;
+  /* padding: 5px 8px; */
   /* margin-left: 80px; */
+}
+
+
+#toolbar input {
+  vertical-align: middle;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+
+#toolbar table tr {
+  transform: translateY(0);
+  transition: transform 0.4s ease-out;
+}
+
+#toolbar table tr.up {
+  transform: translateY(33px);
+  transition: none;
+}
+
+#toolbar table tr.down {
+  transform: translateY(-33px);
+  transition: none;
 }

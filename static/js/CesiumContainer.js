@@ -8,10 +8,12 @@ var online = true
 if(online==true){
     // Use imagery, terrain and buildings
     var viewer = new Cesium.Viewer('cesiumContainer',{
-        terrainProvider: Cesium.createWorldTerrain(),
+        // terrainProvider: Cesium.createWorldTerrain(),
+        // baseLayerPicker: false,
     });
     // Add in Open Street Map buildings
-    viewer.scene.primitives.add(Cesium.createOsmBuildings());
+    // viewer.scene.primitives.add(Cesium.createOsmBuildings());
+
 } else {
     // Stick to default globe
     var viewer = new Cesium.Viewer('cesiumContainer',{
@@ -21,17 +23,38 @@ if(online==true){
     });
 }
 
-viewer.scene.globe.enableLighting = true;
-viewer.scene.postProcessStages.fxaa.enabled = true
-
-
-// Webpage controls
 
 
 // 
 var camera = viewer.camera
 var scene = viewer.scene
+var layers = viewer.scene.imageryLayers;
 
+scene.globe.enableLighting = true;
+scene.postProcessStages.fxaa.enabled = true
+
+// // Add event listener, which transforms the camera postion to icrf
+// function icrf(scene, time) {
+//   if (scene.mode !== Cesium.SceneMode.SCENE3D) {
+//     return;
+//   }
+
+//   const icrfToFixed = Cesium.Transforms.computeIcrfToFixedMatrix(time);
+//   if (Cesium.defined(icrfToFixed)) {
+//     const camera = viewer.camera;
+//     const offset = Cesium.Cartesian3.clone(camera.position);
+//     const transform = Cesium.Matrix4.fromRotationTranslation(icrfToFixed);
+//     camera.lookAtTransform(transform, offset);
+//   }
+// }
+
+// scene.postUpdate.addEventListener(icrf);
+
+// console.log(layers.get(0))
+// var tileLayer = layers.addImageryProvider(new Cesium.SingleTileImageryProvider({url: '/image'}));
+// tileLayer.alpha = 0.5
+// console.log(tileLayer)
+// Webpage controls
 
 // Clock options
 var now = new Date().toISOString();
@@ -55,6 +78,13 @@ function setTimeNow(){
 
 initializeClock()
 
+function reset() {
+  viewer.dataSources.removeAll();
+  viewer.entities.removeAll();
+  viewer.scene.primitives.removeAll();
+  initializeClock()
+}
+
 function addToolbarButton(text, onclick, toolbarID) {
     var button = document.createElement('button');
     button.type = 'button';
@@ -64,7 +94,7 @@ function addToolbarButton(text, onclick, toolbarID) {
         onclick();
     };
     button.textContent = text;
-    document.getElementById(toolbarID || 'toolbar').appendChild(button);
+    document.getElementById(toolbarID || 'toolbar2').appendChild(button);
 }
 
 function addToolbarMenu(options, toolbarID) {
@@ -77,7 +107,7 @@ function addToolbarMenu(options, toolbarID) {
             item.onselect();
         }
     };
-    document.getElementById(toolbarID || 'toolbar').appendChild(menu);
+    document.getElementById(toolbarID || 'toolbar2').appendChild(menu);
 
     for (var i = 0, len = options.length; i < len; ++i) {
         var option = document.createElement('option');
@@ -89,12 +119,6 @@ function addToolbarMenu(options, toolbarID) {
 }
 
 
-function reset() {
-    viewer.dataSources.removeAll();
-    viewer.entities.removeAll();
-    viewer.scene.primitives.removeAll();
-    initializeClock()
-}
 
 // Add buttons, the main app.py file serves these urls and are defined in the flask routes
 addToolbarButton("Reset", function () {
@@ -109,6 +133,7 @@ addToolbarButton("Set time now", function () {
 function addCZML(czmlRoute){
   viewer.clock.shouldAnimate = true
   viewer.dataSources.removeAll()
+  console.log(czmlRoute)
   viewer.dataSources.add(Cesium.CzmlDataSource.load(czmlRoute));
 }
 
@@ -296,5 +321,251 @@ addToolbarButton("Ground Stations", function () {
 var options = [{text:'data1.czml',value:'val1',onselect:function(){addCZML("czml1")}},
                {text:'data2.czml',value:'val2',onselect: function() {addCZML("czml2")}}]
 addToolbarMenu(options) 
+
+
+
+
+// Drop down menu, using knockout, which is an older js library to talk to html and react to changes
+
+const imageryLayers = viewer.imageryLayers;
+
+// Knockout uses a viewmodel to track what is changing
+const viewModel = {
+  layers: [],
+  baseLayers: [],
+  upLayer: null,
+  downLayer: null,
+  selectedLayer: null,
+  isSelectableLayer: function (layer) {
+    return this.baseLayers.indexOf(layer) >= 0;
+  },
+  raise: function (layer, index) {
+    imageryLayers.raise(layer);
+    viewModel.upLayer = layer;
+    viewModel.downLayer = viewModel.layers[Math.max(0, index - 1)];
+    updateLayerList();
+    window.setTimeout(function () {
+      viewModel.upLayer = viewModel.downLayer = null;
+    }, 10);
+  },
+  lower: function (layer, index) {
+    imageryLayers.lower(layer);
+    viewModel.upLayer =
+      viewModel.layers[
+        Math.min(viewModel.layers.length - 1, index + 1)
+      ];
+    viewModel.downLayer = layer;
+    updateLayerList();
+    window.setTimeout(function () {
+      viewModel.upLayer = viewModel.downLayer = null;
+    }, 10);
+  },
+  canRaise: function (layerIndex) {
+    return layerIndex > 0;
+  },
+  canLower: function (layerIndex) {
+    return layerIndex >= 0 && layerIndex < imageryLayers.length - 1;
+  },
+};
+const baseLayers = viewModel.baseLayers;
+
+Cesium.knockout.track(viewModel);
+
+function setupLayers() {
+  // Create all the base layers that this example will support.
+  // These base layers aren't really special.  It's possible to have multiple of them
+  // enabled at once, just like the other layers, but it doesn't make much sense because
+  // all of these layers cover the entire globe and are opaque.
+  addBaseLayerOption("Bing Maps Aerial", undefined); // the current base layer
+
+  addBaseLayerOption("Bing Maps Road",Cesium.createWorldImagery({style: Cesium.IonWorldImageryStyle.ROAD}));
+
+  addBaseLayerOption("ArcGIS World Street Maps",new Cesium.ArcGisMapServerImageryProvider({url:"https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"}));
+
+  addBaseLayerOption("OpenStreetMaps",new Cesium.OpenStreetMapImageryProvider());
+
+  addBaseLayerOption("Stamen Maps", new Cesium.OpenStreetMapImageryProvider({url: "https://stamen-tiles.a.ssl.fastly.net/watercolor/",fileExtension: "jpg"}));
+
+  addBaseLayerOption(
+    "Natural Earth II (local)",
+    new Cesium.TileMapServiceImageryProvider({
+      url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII"),
+    })
+  );
+  addBaseLayerOption(
+    "USGS Shaded Relief (via WMTS)",
+    new Cesium.WebMapTileServiceImageryProvider({
+      url:
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSShadedReliefOnly/MapServer/WMTS",
+      layer: "USGSShadedReliefOnly",
+      style: "default",
+      format: "image/jpeg",
+      tileMatrixSetID: "default028mm",
+      maximumLevel: 19,
+    })
+  );
+
+  // Create the additional layers
+  // addAdditionalLayerOption(
+  //   "GOES West Infrared",
+  //   new Cesium.WebMapServiceImageryProvider({
+  //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/west_ir.cgi?",
+  //     layers: "goes_west_ir",
+  //     parameters: {
+  //       transparent: "true",
+  //       format: "image/png",
+  //     },
+  //   })
+  // );
+
+    //  Looks likes east is conus
+    addAdditionalLayerOption(
+      "GOES West Full IR",
+      new Cesium.WebMapServiceImageryProvider({
+        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_west.cgi?",
+        layers: "fulldisk_ch14",
+        parameters: {
+          transparent: "true",
+          format: "image/png",
+        },
+      })
+    );
+
+    // Create the additional layers
+    addAdditionalLayerOption(
+      "GOES West Vis",
+      new Cesium.WebMapServiceImageryProvider({
+        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/west_vis.cgi?",
+        layers: "goes_west_vis",
+        parameters: {
+          transparent: "true",
+          format: "image/png",
+        },
+      })
+    );
+
+      // Create the additional layers
+      addAdditionalLayerOption(
+        "GOES East Vis",
+        new Cesium.WebMapServiceImageryProvider({
+          url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/east_vis.cgi?",
+          layers: "goes_east_vis",
+          parameters: {
+            transparent: "true",
+            format: "image/png",
+          },
+        })
+      );
+
+  // //  Looks likes east is conus
+  // addAdditionalLayerOption(
+  //   "GOES East Infrared",
+  //   new Cesium.WebMapServiceImageryProvider({
+  //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/east_ir.cgi?",
+  //     layers: "goes_east_ir",
+  //     parameters: {
+  //       transparent: "true",
+  //       format: "image/png",
+  //     },
+  //   })
+  // );
+
+    //  Looks likes east is conus
+    addAdditionalLayerOption(
+      "GOES East Full IR",
+      new Cesium.WebMapServiceImageryProvider({
+        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?",
+        layers: "fulldisk_ch14",
+        parameters: {
+          transparent: "true",
+          format: "image/png",
+        },
+      })
+    );
+
+ 
+
+  addAdditionalLayerOption(
+    "Nexrad Weather Radar",
+    new Cesium.WebMapServiceImageryProvider({
+      url:
+        "https://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi?",
+      layers: "nexrad-n0r",
+      parameters: {
+        transparent: "true",
+        format: "image/png",
+      },
+    })
+  );
+
+  addAdditionalLayerOption(
+    "Custom Heatmap",
+    new Cesium.SingleTileImageryProvider({
+      url: "/image",
+      // rectangle: Cesium.Rectangle.fromDegrees(-180,-90,180,90),
+    }),
+    0.5
+  );
+  addAdditionalLayerOption("Grid",new Cesium.GridImageryProvider(),1.0,false);
+}
+
+function addBaseLayerOption(name, imageryProvider) {
+  let layer;
+  if (typeof imageryProvider === "undefined") {
+    layer = imageryLayers.get(0);
+    viewModel.selectedLayer = layer;
+  } else {
+    layer = new Cesium.ImageryLayer(imageryProvider);
+  }
+
+  layer.name = name;
+  baseLayers.push(layer);
+}
+
+function addAdditionalLayerOption(name, imageryProvider, alpha, show) {
+  const layer = imageryLayers.addImageryProvider(imageryProvider);
+  layer.alpha = Cesium.defaultValue(alpha, 0.5);
+  layer.show = Cesium.defaultValue(show, true);
+  layer.name = name;
+  Cesium.knockout.track(layer, ["alpha", "show", "name"]);
+}
+
+function updateLayerList() {
+  const numLayers = imageryLayers.length;
+  viewModel.layers.splice(0, viewModel.layers.length);
+  for (let i = numLayers - 1; i >= 0; --i) {
+    viewModel.layers.push(imageryLayers.get(i));
+  }
+}
+
+setupLayers();
+updateLayerList();
+
+//Bind the viewModel to the DOM elements of the UI that call for it.
+const toolbar = document.getElementById("toolbar");
+Cesium.knockout.applyBindings(viewModel, toolbar);
+
+Cesium.knockout
+  .getObservable(viewModel, "selectedLayer")
+  .subscribe(function (baseLayer) {
+    // Handle changes to the drop-down base layer selector.
+    let activeLayerIndex = 0;
+    const numLayers = viewModel.layers.length;
+    for (let i = 0; i < numLayers; ++i) {
+      if (viewModel.isSelectableLayer(viewModel.layers[i])) {
+        activeLayerIndex = i;
+        break;
+      }
+    }
+    const activeLayer = viewModel.layers[activeLayerIndex];
+    const show = activeLayer.show;
+    const alpha = activeLayer.alpha;
+    imageryLayers.remove(activeLayer, false);
+    imageryLayers.add(baseLayer, numLayers - activeLayerIndex - 1);
+    baseLayer.show = show;
+    baseLayer.alpha = alpha;
+    updateLayerList();
+  });
+
 
 

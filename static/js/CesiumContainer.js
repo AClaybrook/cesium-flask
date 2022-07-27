@@ -2,7 +2,7 @@
 //   Cesium.Ion.defaultAccessToken = ''
 
 // Inputs
-var online = true
+var online = false
 
 // Create now cesium container
 if(online==true){
@@ -378,9 +378,9 @@ function setupLayers() {
   // all of these layers cover the entire globe and are opaque.
   addBaseLayerOption("Bing Maps Aerial", undefined); // the current base layer
 
-  addBaseLayerOption("Bing Maps Road",Cesium.createWorldImagery({style: Cesium.IonWorldImageryStyle.ROAD}));
+  // addBaseLayerOption("Bing Maps Road",Cesium.createWorldImagery({style: Cesium.IonWorldImageryStyle.ROAD}));
 
-  addBaseLayerOption("ArcGIS World Street Maps",new Cesium.ArcGisMapServerImageryProvider({url:"https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"}));
+  // addBaseLayerOption("ArcGIS World Street Maps",new Cesium.ArcGisMapServerImageryProvider({url:"https://services.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"}));
 
   addBaseLayerOption("OpenStreetMaps",new Cesium.OpenStreetMapImageryProvider());
 
@@ -418,56 +418,56 @@ function setupLayers() {
   //   })
   // );
 
-    //  Looks likes east is conus
-    addAdditionalLayerOption(
-      "GOES West Full IR",
-      new Cesium.WebMapServiceImageryProvider({
-        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_west.cgi?",
-        layers: "fulldisk_ch14",
-        parameters: {
-          transparent: "true",
-          format: "image/png",
-        },
-      })
-    );
+    // //  Looks likes east is conus
+    // addAdditionalLayerOption(
+    //   "GOES West Full IR",
+    //   new Cesium.WebMapServiceImageryProvider({
+    //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_west.cgi?",
+    //     layers: "fulldisk_ch14",
+    //     parameters: {
+    //       transparent: "true",
+    //       format: "image/png",
+    //     },
+    //   })
+    // );
 
-    addAdditionalLayerOption(
-      "GOES East Full IR",
-      new Cesium.WebMapServiceImageryProvider({
-        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?",
-        layers: "fulldisk_ch14",
-        parameters: {
-          transparent: "true",
-          format: "image/png",
-        },
-      })
-    );
+    // addAdditionalLayerOption(
+    //   "GOES East Full IR",
+    //   new Cesium.WebMapServiceImageryProvider({
+    //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes_east.cgi?",
+    //     layers: "fulldisk_ch14",
+    //     parameters: {
+    //       transparent: "true",
+    //       format: "image/png",
+    //     },
+    //   })
+    // );
 
-    // Create the additional layers
-    addAdditionalLayerOption(
-      "GOES West Vis",
-      new Cesium.WebMapServiceImageryProvider({
-        url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/west_vis.cgi?",
-        layers: "goes_west_vis",
-        parameters: {
-          transparent: "true",
-          format: "image/png",
-        },
-      })
-    );
+    // // Create the additional layers
+    // addAdditionalLayerOption(
+    //   "GOES West Vis",
+    //   new Cesium.WebMapServiceImageryProvider({
+    //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/west_vis.cgi?",
+    //     layers: "goes_west_vis",
+    //     parameters: {
+    //       transparent: "true",
+    //       format: "image/png",
+    //     },
+    //   })
+    // );
 
-      // Create the additional layers
-      addAdditionalLayerOption(
-        "GOES East Vis",
-        new Cesium.WebMapServiceImageryProvider({
-          url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/east_vis.cgi?",
-          layers: "goes_east_vis",
-          parameters: {
-            transparent: "true",
-            format: "image/png",
-          },
-        })
-      );
+      // // Create the additional layers
+      // addAdditionalLayerOption(
+      //   "GOES East Vis",
+      //   new Cesium.WebMapServiceImageryProvider({
+      //     url:"https://mesonet.agron.iastate.edu/cgi-bin/wms/goes/east_vis.cgi?",
+      //     layers: "goes_east_vis",
+      //     parameters: {
+      //       transparent: "true",
+      //       format: "image/png",
+      //     },
+      //   })
+      // );
 
 
 
